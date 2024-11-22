@@ -103,7 +103,7 @@
                 <li>
                 <a href="index.php?page=student" class="nav-link text-dark">
                     <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#people-circle"></use></svg>
-                    Student
+                    Account
                 </a>
                 </li>
             </ul>

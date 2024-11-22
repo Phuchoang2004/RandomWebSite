@@ -1,10 +1,9 @@
 <h1>Login</h1>
 <?php
-// Use the existing session to check for login errors
-if (isset($_SESSION['login_error'])) {
-    echo '<div class="alert alert-danger">' . htmlspecialchars($_SESSION['login_error']) . '</div>';
-    unset($_SESSION['login_error']); // Clear the error message
-}
+// if user still login, require user to logout first
+if (isset($_SESSION['user_id'])) {
+    echo "<script>window.location.href = '?page=dashboard';</script>";
+} 
 ?>
 <form action="?page=login_process" method="post" id="loginForm">
     <div>

@@ -40,7 +40,7 @@ if (isset($_POST['login'])) {
             // Login successful
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['username'] = $row['username'];
-
+            $_SESSION['userlevel'] = $row['userlevel'];
             
             $cookie_name = "user_session";
             $cookie_value = session_id();

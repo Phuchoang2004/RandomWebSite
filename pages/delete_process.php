@@ -1,6 +1,8 @@
 <?php
 include 'db.php';
-
+if ($_SESSION['userlevel'] != 1) {
+    die("Access denied.");
+}
 if (isset($_POST['delete'])) {
     $dbusername = $_POST['username'];
     $dbpassword = $_POST['pwd'];
