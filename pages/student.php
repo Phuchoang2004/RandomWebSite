@@ -10,20 +10,20 @@
         transform: translate(-50%,-50%);
     }
     .option {
-        background-color: #007bff; /* Blue background */
-        color: white; /* White text */
-        padding: 10px 20px; /* Padding inside the box */
-        border-radius: 20px; /* Rounded corners */
-        text-decoration: none; /* Remove underline from links */
+        background-color: #007bff; 
+        color: white; 
+        padding: 10px 20px; 
+        border-radius: 20px; 
+        text-decoration: none;
         display: flex;
         align-items: center;
-        transition: background-color 0.3s; /* Smooth transition for hover effect */
+        transition: background-color 0.3s; 
     }
     .option:hover {
-        background-color: #0056b3; /* Darker blue on hover */
+        background-color: #0056b3; 
     }
     .option i {
-        margin-right: 10px; /* Space between icon and text */
+        margin-right: 10px; 
     }
 </style>
 

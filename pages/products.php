@@ -78,7 +78,7 @@ $products = fetch_products($conn);
 img {
     display: block;
     width: 100%;
-    height: auto; /* Maintain aspect ratio */
+    height: auto; 
 }
 
 h2 {
@@ -102,12 +102,17 @@ h2 {
     border-radius: 0.8rem;
     overflow: hidden;
     border: 0.5rem solid;
+    transition: transform 0.3s ease;
+}
+
+.cta:hover {
+    transform: translateY(-5px);
 }
 
 .cta img {
     object-fit: cover;
     width: 100%;
-    height: auto; /* Maintain aspect ratio */
+    height: auto; 
 }
 
 .cta__text-column {
@@ -132,25 +137,27 @@ h2 {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 30px; /* Adjust the gap as needed */
+    gap: 30px; 
+    min-height: 200px; 
+    transition: all 0.3s ease;
 }
 
 .product-grid .cta {
-    flex: 1 1 calc(30% - 30px); /* Three products per row with gap */
+    flex: 1 1 calc(30% - 30px);
     box-sizing: border-box;
     max-width: calc(30% - 30px);
 }
 
 @media (max-width: 768px) {
     .product-grid .cta {
-        flex: 1 1 calc(45% - 30px); /* Two products per row on smaller screens */
+        flex: 1 1 calc(45% - 30px); 
         max-width: calc(45% - 30px);
     }
 }
 
 @media (max-width: 480px) {
     .product-grid .cta {
-        flex: 1 1 100%; /* One product per row on very small screens */
+        flex: 1 1 100%; 
         max-width: 100%;
     }
 }
@@ -230,19 +237,19 @@ if ($_SESSION['userlevel'] == 1) {
     echo '<div style="visibility:hidden; height: 40px;"></div>';
     echo '<div class="form-container">';
     echo '<h1>Search Products</h1>';
-    echo '<form method="get" class="search-form">
+    echo '<form id="searchForm" class="search-form">
         <div class="form-group">
-            <input type="hidden" name="page" value="products">
-            <input type="text" name="search" placeholder="Search by name or category..." 
+            <input type="text" name="search" id="searchInput" placeholder="Search by name or category..." 
                    value="' . htmlspecialchars($search) . '" class="form-control">
             <input type="submit" value="Search" class="btn btn-primary">
         </div>
     </form>';
     echo '</div>';
+    echo '<div style="visibility:hidden; height: 40px;"></div>';
+    echo '<div id="productResults" class="product-grid"></div>';
     
     echo '<div style="visibility:hidden; height: 40px;"></div>';
     
-    // Modified products query to include search
     if ($search) {
         $stmt = $conn->prepare("SELECT * FROM products WHERE name LIKE ? OR category LIKE ?");
         $searchParam = "%{$search}%";
@@ -253,40 +260,34 @@ if ($_SESSION['userlevel'] == 1) {
         $stmt->close();
     }
 
-    // Display results or no results message
-    if (!empty($products)) {
-        echo '<div class="product-grid">';
-        foreach ($products as $product) {
-            list($mainColor, $secondMainColor) = getMainColors($product['image']);
-            list($h, $s, $l) = rgbToHsl($secondMainColor[0], $secondMainColor[1], $secondMainColor[2]);
-            list($mainR, $mainG, $mainB) = $mainColor;
-            
-            echo '<div class="cta" style="background: hsl(' . $h . ', ' . $s . '%, ' . $l . '%);">';
-            echo '<img src="' . htmlspecialchars($product['image']) . '" alt="' . htmlspecialchars($product['name']) . '">';
-            echo '<div class="cta__text-column">';
-            echo '<h2 style="color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">' . htmlspecialchars($product['name']) . '</h2>';
-            echo '<p style="color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">Price: $' . htmlspecialchars($product['price']) . '</p>';
-            echo '<p style="color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">Category: ' . htmlspecialchars($product['category']) . '</p>';
-            echo '<a href="index.php?page=checkout&id=' . $product['id'] . '" style="background: rgb(' . $secondMainColor[0] . ', ' . $secondMainColor[1] . ', ' . $secondMainColor[2] . '); color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">Buy Now</a>';
-            echo '</div>';
-            echo '</div>';
-        }
-        echo '</div>';
-        // Add this after your existing product grid code
-        echo '</div>'; // Close product-grid div
-
-        // Add map container
-        echo '<div style="visibility:hidden; height: 40px;"></div>';
-        echo '<div class="map-container">';
-        echo '<h2>Find Us</h2>';
-        echo '<div id="map" style="height: 400px; width: 100%; border-radius: 8px;"></div>';
-        echo '</div>';
-    } else {
-        if ($search) {
-            echo '<div class="alert alert-info">No products found matching your search.</div>';
-        } else {
-            echo '<div class="alert alert-info">No products available.</div>';
-        }
-    }
 }
 ?>
+
+<script>
+document.getElementById("searchForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const searchTerm = document.getElementById("searchInput").value;
+    searchProducts(searchTerm);
+});
+
+document.getElementById("searchInput").addEventListener("input", function(e) {
+    const searchTerm = e.target.value;
+    searchProducts(searchTerm);
+});
+
+function searchProducts(searchTerm) {
+    fetch(`index.php?page=search_products&search=${encodeURIComponent(searchTerm)}`, {
+    })
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById("productResults").innerHTML = html;
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        document.getElementById("productResults").innerHTML = 
+            "<div class='alert alert-danger'>Error loading products.</div>";
+    });
+}
+
+searchProducts("");
+</script>

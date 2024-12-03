@@ -1,4 +1,9 @@
 <h1>Register</h1>
+<?php
+if (isset($_SESSION['user_id'])) {
+    echo "<script>window.location.href = '?page=dashboard';</script>";
+} 
+?>
 <form action="?page=register_process" method="post" id ="registerForm">
     <div>
         <label for="username">E-mail Address:</label>

@@ -17,6 +17,5 @@ if (ini_get("session.use_cookies")) {
 // Delete the user session cookie
 setcookie("user_session", "", time() - 3600, "/");
 
-// Redirect to login page
 echo "<script>window.location.href = '?page=login';</script>";
 exit();

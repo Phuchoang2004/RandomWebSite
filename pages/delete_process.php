@@ -27,5 +27,5 @@ if (isset($_POST['delete'])) {
         echo "NO username";
     }
 
-    mysqli_close($conn); // Close the database connection
+    mysqli_close($conn); 
 }

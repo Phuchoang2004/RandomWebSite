@@ -4,10 +4,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Get product details from URL parameters
 $product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Fetch product details
 include 'db.php';
 $stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
 $stmt->bind_param("i", $product_id);
@@ -25,7 +23,6 @@ if (!$product) {
 <div class="container mt-5">
     <h2>Confirm Your Order</h2>
     
-    <!-- Product Summary -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Product Details</h5>
@@ -42,7 +39,6 @@ if (!$product) {
         </div>
     </div>
 
-    <!-- Delivery Address Form -->
     <div class="card">
         <div class="card-body">
             <h5 class="card-title">Delivery Address</h5>
@@ -79,7 +75,6 @@ if (!$product) {
 </div>
 
 <script>
-// Location data
 const locations = {
     'Vietnam': {
         'Ho Chi Minh': ['District 1', 'District 2', 'District 3', 'Thu Duc'],
@@ -93,12 +88,10 @@ const locations = {
     }
 };
 
-// Populate dropdowns
 const countrySelect = document.getElementById('country');
 const stateSelect = document.getElementById('state');
 const citySelect = document.getElementById('city');
 
-// Initialize Google Map
 let map;
 let marker;
 
@@ -109,12 +102,10 @@ function initMap() {
     });
 }
 
-// Populate country dropdown
 for (let country in locations) {
     countrySelect.add(new Option(country, country));
 }
 
-// Country change handler
 countrySelect.addEventListener('change', function() {
     stateSelect.disabled = false;
     stateSelect.length = 1;
@@ -128,7 +119,6 @@ countrySelect.addEventListener('change', function() {
     }
 });
 
-// State change handler
 stateSelect.addEventListener('change', function() {
     citySelect.disabled = false;
     citySelect.length = 1;
@@ -141,7 +131,6 @@ stateSelect.addEventListener('change', function() {
     }
 });
 
-// Update map when address is complete
 document.getElementById('deliveryForm').addEventListener('change', function() {
     const country = countrySelect.value;
     const state = stateSelect.value;
@@ -170,4 +159,4 @@ document.getElementById('deliveryForm').addEventListener('change', function() {
     }
 });
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
+<script src="API KEY" async defer></script>
