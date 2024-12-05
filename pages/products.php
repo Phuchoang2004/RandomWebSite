@@ -5,12 +5,18 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+$category = isset($_GET['category']) ? $_GET['category'] : '';
+$search = isset($_GET['search']) ? $_GET['search'] : $category; // Use category as search if provided
+
 include 'db.php';
 require 'vendor/autoload.php';
 use ColorThief\ColorThief;
 
 function fetch_products($conn) {
-    $query = "SELECT * FROM products";
+    $query = "SELECT p.*, COUNT(bh.product_id) as order_count 
+              FROM products p 
+              LEFT JOIN buy_history bh ON p.id = bh.product_id 
+              GROUP BY p.id";
     $result = mysqli_query($conn, $query);
     $products = [];
     while ($row = mysqli_fetch_assoc($result)) {
@@ -19,42 +25,6 @@ function fetch_products($conn) {
     return $products;
 }
 
-function getMainColors($imagePath) {
-    $palette = ColorThief::getPalette($imagePath, 5);
-    return [$palette[0], $palette[1]]; // Get the main color and the second main color
-}
-
-function rgbToHsl($r, $g, $b) {
-    $r /= 255;
-    $g /= 255;
-    $b /= 255;
-    $max = max($r, $g, $b);
-    $min = min($r, $g, $b);
-    $h = 0;
-    $s = 0;
-    $l = ($max + $min) / 2;
-
-    if ($max == $min) {
-        $h = $s = 0; // achromatic
-    } else {
-        $d = $max - $min;
-        $s = $l > 0.5 ? $d / (2 - $max - $min) : $d / ($max + $min);
-        switch ($max) {
-            case $r:
-                $h = ($g - $b) / $d + ($g < $b ? 6 : 0);
-                break;
-            case $g:
-                $h = ($b - $r) / $d + 2;
-                break;
-            case $b:
-                $h = ($r - $g) / $d + 4;
-                break;
-        }
-        $h /= 6;
-    }
-
-    return [$h * 360, $s * 100, $l * 100];
-}
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $products = fetch_products($conn);
 ?>
@@ -63,17 +33,6 @@ $products = fetch_products($conn);
 * {
     box-sizing: border-box;
 }
-
-/* body {
-    font-family: "Open Sans", sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    justify-content: center;
-    align-items: center;
-    background: hsl(187 40% 98%);
-} */
 
 img {
     display: block;
@@ -103,10 +62,6 @@ h2 {
     overflow: hidden;
     border: 0.5rem solid;
     transition: transform 0.3s ease;
-}
-
-.cta:hover {
-    transform: translateY(-5px);
 }
 
 .cta img {
@@ -188,14 +143,89 @@ h2 {
     border-color: #bee5eb;
     color: #0c5460;
 }
+
+.admin-section {
+    margin-bottom: 40px;
+}
+
+.admin-section h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.admin-section form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.admin-section form .form-group {
+    margin-bottom: 15px;
+}
+
+.admin-section form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.admin-section form .form-group input,
+.admin-section form .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.admin-section form .btn {
+    width: 100%;
+    padding: 10px;
+}
+
+.product-list {
+    max-width: 800px;
+    margin: 0 auto;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.product-list th, .product-list td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.product-list th {
+    background-color: #333;
+    color: #fff;
+}
+
+.product-list tr:nth-child(even) {
+    background-color: #f9f9f9;
+    color: #000;
+}
+
+.product-list tr:nth-child(odd) {
+    background-color: #fff;
+    color: #000;
+}
+
+.search-header {
+    color: #fff;
+    font-family: 'Pacifico', cursive;
+    text-align: center;
+    margin-bottom: 20px;
+}
 </style>
 
 <?php
 if ($_SESSION['userlevel'] == 1) {
     echo '<div style="visibility:hidden; height: 40px;"></div>';
-    echo '<div class="form-container">';
-    echo '<h1>Add Product</h1>';
+    echo '<div class="admin-section">';
     echo '<form action="index.php?page=add_product_process" method="post" enctype="multipart/form-data">
+        <h1>Add Product</h1>
         <div class="form-group">
             <label for="name">Product Name:</label>
             <input type="text" name="name" id="name" required>
@@ -220,10 +250,9 @@ if ($_SESSION['userlevel'] == 1) {
     </form>';
     echo '</div>';
 
-    echo '<div style="visibility:hidden; height: 40px;"></div>';
-    echo '<div class="form-container">';
-    echo '<h1>Delete Product</h1>';
+    echo '<div class="admin-section">';
     echo '<form action="index.php?page=delete_product_process" method="post">
+        <h1>Delete Product</h1>
         <div class="form-group">
             <label for="product_id">Product ID:</label>
             <input type="number" name="product_id" id="product_id" required>
@@ -231,12 +260,38 @@ if ($_SESSION['userlevel'] == 1) {
         <input type="submit" value="Delete Product" class="btn btn-danger">
     </form>';
     echo '</div>';
+
+    echo '<div class="admin-section">';
+    echo '<h1>Product List</h1>';
+    echo '<table class="product-list">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Number of Orders</th>
+            </tr>
+        </thead>
+        <tbody>';
+    foreach ($products as $product) {
+        echo '<tr>
+            <td>' . htmlspecialchars($product['id']) . '</td>
+            <td>' . htmlspecialchars($product['name']) . '</td>
+            <td>' . htmlspecialchars($product['category']) . '</td>
+            <td>$' . htmlspecialchars($product['price']) . '</td>
+            <td>' . htmlspecialchars($product['order_count']) . '</td>
+        </tr>';
+    }
+    echo '</tbody>
+    </table>';
+    echo '</div>';
 } else {
     
     // Search form
     echo '<div style="visibility:hidden; height: 40px;"></div>';
     echo '<div class="form-container">';
-    echo '<h1>Search Products</h1>';
+    echo '<h1 class="search-header">Search Products</h1>';
     echo '<form id="searchForm" class="search-form">
         <div class="form-group">
             <input type="text" name="search" id="searchInput" placeholder="Search by name or category..." 
@@ -247,6 +302,15 @@ if ($_SESSION['userlevel'] == 1) {
     echo '</div>';
     echo '<div style="visibility:hidden; height: 40px;"></div>';
     echo '<div id="productResults" class="product-grid"></div>';
+    
+    echo '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const category = "' . $category . '";
+            if (category) {
+                searchProducts(category);
+            }
+        });
+    </script>';
     
     echo '<div style="visibility:hidden; height: 40px;"></div>';
     

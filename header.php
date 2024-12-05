@@ -82,23 +82,24 @@
                 </a>
                 </li>
                 <li>
-                <a href="#" class="nav-link text-dark">
+                <a href="index.php?page=buy_history" class="nav-link text-dark">
                     <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#table"></use></svg>
-                    My Bill
+                    Buy History
                 </a>
                 </li>
-                <li class = "nav-item">
-                <a href="index.php?page=products" class="nav-link text-dark">
-                    <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#grid"></use></svg>
-                    Product
+                <!-- Update the product dropdown menu -->
+                <li class="nav-item dropdown">
+                    <a href="index.php?page=products" class="nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown">
+                        <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#grid"></use></svg>
+                        Product
+                    </a>
                     <div class="dropdown-menu">
-                        <a href="index.php?page=products" class="dropdown-item">Electronics</a>
-                        <a href="index.php?page=products" class="dropdown-item">Clothing</a>
-                        <a href="index.php?page=products" class="dropdown-item">Home & Garden</a>
+                        <a href="index.php?page=products&category=Electronics" class="dropdown-item">Electronics</a>
+                        <a href="index.php?page=products&category=Clothing" class="dropdown-item">Clothing</a>
+                        <a href="index.php?page=products&category=Home" class="dropdown-item">Home & Garden</a>
                         <hr>
                         <a href="index.php?page=products" class="dropdown-item">All Products</a>
                     </div>
-                </a>
                 </li>
                 <li>
                 <a href="index.php?page=student" class="nav-link text-dark">
