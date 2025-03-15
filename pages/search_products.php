@@ -6,7 +6,7 @@ use ColorThief\ColorThief;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
 $stmt = $conn->prepare("SELECT * FROM products WHERE name LIKE ? OR category LIKE ?");
-$searchParam = "%{$search}%";
+$searchParam = "{$search}%";
 $stmt->bind_param("ss", $searchParam, $searchParam);
 $stmt->execute();
 $result = $stmt->get_result();

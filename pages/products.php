@@ -12,21 +12,63 @@ include 'db.php';
 require 'vendor/autoload.php';
 use ColorThief\ColorThief;
 
-function fetch_products($conn) {
+function fetch_products($conn, $search) {
     $query = "SELECT p.*, COUNT(bh.product_id) as order_count 
               FROM products p 
               LEFT JOIN buy_history bh ON p.id = bh.product_id 
+              WHERE p.name LIKE ? OR p.category LIKE ?
               GROUP BY p.id";
-    $result = mysqli_query($conn, $query);
+    $stmt = $conn->prepare($query);
+    $searchParam = "%{$search}%";
+    $stmt->bind_param("ss", $searchParam, $searchParam);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $products = [];
     while ($row = mysqli_fetch_assoc($result)) {
         $products[] = $row;
     }
+    $stmt->close();
     return $products;
 }
 
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-$products = fetch_products($conn);
+function getMainColors($imagePath) {
+    $palette = ColorThief::getPalette($imagePath, 5);
+    return [$palette[0], $palette[1]]; // Get the main color and the second main color
+}
+
+function rgbToHsl($r, $g, $b) {
+    $r /= 255;
+    $g /= 255;
+    $b /= 255;
+    $max = max($r, $g, $b);
+    $min = min($r, $g, $b);
+    $h = 0;
+    $s = 0;
+    $l = ($max + $min) / 2;
+
+    if ($max == $min) {
+        $h = $s = 0; // achromatic
+    } else {
+        $d = $max - $min;
+        $s = $l > 0.5 ? $d / (2 - $max - $min) : $d / ($max + $min);
+        switch ($max) {
+            case $r:
+                $h = ($g - $b) / $d + ($g < $b ? 6 : 0);
+                break;
+            case $g:
+                $h = ($b - $r) / $d + 2;
+                break;
+            case $b:
+                $h = ($r - $g) / $d + 4;
+                break;
+        }
+        $h /= 6;
+    }
+
+    return [$h * 360, $s * 100, $l * 100];
+}
+
+$products = fetch_products($conn, $search);
 ?>
 
 <style>
@@ -62,6 +104,10 @@ h2 {
     overflow: hidden;
     border: 0.5rem solid;
     transition: transform 0.3s ease;
+}
+
+.cta:hover {
+    transform: translateY(-5px);
 }
 
 .cta img {
@@ -301,16 +347,22 @@ if ($_SESSION['userlevel'] == 1) {
     </form>';
     echo '</div>';
     echo '<div style="visibility:hidden; height: 40px;"></div>';
-    echo '<div id="productResults" class="product-grid"></div>';
-    
-    echo '<script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const category = "' . $category . '";
-            if (category) {
-                searchProducts(category);
-            }
-        });
-    </script>';
+    echo '<div id="productResults" class="product-grid">';
+    foreach ($products as $product) {
+        list($mainColor, $secondMainColor) = getMainColors($product['image']);
+        list($h, $s, $l) = rgbToHsl($secondMainColor[0], $secondMainColor[1], $secondMainColor[2]);
+        list($mainR, $mainG, $mainB) = $mainColor;
+        
+        echo '<div class="cta" style="background: hsl(' . $h . ', ' . $s . '%, ' . $l . '%);">';
+        echo '<img src="' . htmlspecialchars($product['image']) . '" alt="' . htmlspecialchars($product['name']) . '">';
+        echo '<div class="cta__text-column">';
+        echo '<h2 style="color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">' . htmlspecialchars($product['name']) . '</h2>';
+        echo '<p style="color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">Price: $' . htmlspecialchars($product['price']) . '</p>';
+        echo '<p style="color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">Category: ' . htmlspecialchars($product['category']) . '</p>';
+        echo '<a href="index.php?page=checkout&id=' . $product['id'] . '" style="background: rgb(' . $secondMainColor[0] . ', ' . $secondMainColor[1] . ', ' . $secondMainColor[2] . '); color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">Buy Now</a>';
+        echo '</div></div>';
+    }
+    echo '</div>';
     
     echo '<div style="visibility:hidden; height: 40px;"></div>';
     
@@ -328,6 +380,19 @@ if ($_SESSION['userlevel'] == 1) {
 ?>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get category from URL if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+    
+    if (category) {
+        // Set the search input value
+        document.getElementById('searchInput').value = category;
+        // Trigger the search
+        searchProducts(category);
+    }
+});
+
 document.getElementById("searchForm").addEventListener("submit", function(e) {
     e.preventDefault();
     const searchTerm = document.getElementById("searchInput").value;
@@ -353,5 +418,8 @@ function searchProducts(searchTerm) {
     });
 }
 
-searchProducts("");
+// Only initialize with empty search if no category is selected
+if (!new URLSearchParams(window.location.search).get('category')) {
+    searchProducts("");
+}
 </script>

@@ -32,29 +32,9 @@ if (isset($_SESSION['user_id'])) {
                 </div>
                 <input type="submit" value="Login" name="login" class="btn btn-primary">
             </form>
+            <div class="text-center mt-3">
+                <a href="?page=forgot_password" class="btn btn-link">Forgot Password?</a>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-document.getElementById('loginForm').addEventListener('submit', function(event) {
-    const email = document.getElementById('username').value;
-    const password = document.getElementById('pwd').value;
-
-    // Client-side email validation
-    const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-    if (!emailRegex.test(email)) {
-        event.preventDefault();
-        alert('Please enter a valid email address.');
-        return;
-    }
-
-    // Client-side password validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-    if (!passwordRegex.test(password)) {
-        event.preventDefault();
-        alert('Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number');
-        return;
-    }
-});
-</script>

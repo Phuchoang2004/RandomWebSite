@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div id="paypalBankInfo" style="display: none;">
                     <h5 class="card-title">Payment Information</h5>
                     <div class="text-center">
-                        <img src="path/to/My_Video_Page.png" alt="Payment Information" width="448" height="448">
+                        <img src="./My_Video_Page.png" alt="Payment Information" width="448" height="448">
                     </div>
                 </div>
                 <button type="submit" id="confirmButton" class="btn btn-primary">Confirm Order</button>
