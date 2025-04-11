@@ -42,7 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h5 class="card-title">Product Details</h5>
             <div class="row">
                 <div class="col-md-4">
-                    <img src="<?php echo htmlspecialchars($product['image']); ?>" class="img-fluid" alt="Product Image">
+                    <?php
+                    // Convert BLOB to base64 for display
+                    $imageData = base64_encode($product['image']);
+                    $imageSrc = 'data:image/jpeg;base64,' . $imageData;
+                    ?>
+                    <img src="<?php echo $imageSrc; ?>" class="img-fluid" alt="Product Image">
                 </div>
                 <div class="col-md-8">
                     <h4><?php echo htmlspecialchars($product['name']); ?></h4>

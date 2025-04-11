@@ -54,12 +54,16 @@ $html = '';
 if (!empty($products)) {
     echo '<div style="visibility:hidden; height: 40px;"></div>';
     foreach ($products as $product) {
-        list($mainColor, $secondMainColor) = getMainColors($product['image']);
+        // Convert BLOB to base64 for display
+        $imageData = base64_encode($product['image']);
+        $imageSrc = 'data:image/jpeg;base64,' . $imageData;
+        
+        list($mainColor, $secondMainColor) = getMainColors($imageSrc);
         list($h, $s, $l) = rgbToHsl($secondMainColor[0], $secondMainColor[1], $secondMainColor[2]);
         list($mainR, $mainG, $mainB) = $mainColor;
         
         $html .= '<div class="cta" style="background: hsl(' . $h . ', ' . $s . '%, ' . $l . '%);">';
-        $html .= '<img src="' . htmlspecialchars($product['image']) . '" alt="' . htmlspecialchars($product['name']) . '">';
+        $html .= '<img src="' . $imageSrc . '" alt="' . htmlspecialchars($product['name']) . '">';
         $html .= '<div class="cta__text-column">';
         $html .= '<h2 style="color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">' . htmlspecialchars($product['name']) . '</h2>';
         $html .= '<p style="color: rgb(' . $mainR . ', ' . $mainG . ', ' . $mainB . ');">Price: $' . htmlspecialchars($product['price']) . '</p>';
